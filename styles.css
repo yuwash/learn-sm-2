@@ -1,0 +1,5 @@
+.is-borderless-left { border-left: 4px solid #e9ecef; }
+.is-due { border-left-color: #485fc7 !important; background-color: #f0f5ff; }
+
+/* For your hidden file input label */
+.file-input-label { cursor: pointer; }
