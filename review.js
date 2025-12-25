@@ -54,6 +54,12 @@ export function getCardById(id) {
   return itemsById[id];
 }
 
+export function getCardDueDate(id) {
+  const card = sm2StateById[id];
+  const due = card ? card.due : null;
+  return due ? new Date(due) : null;
+}
+
 /**
  * Replaces custom math with the library scheduler.
  * @param {Card} card - The Card instance from the library

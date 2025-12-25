@@ -175,17 +175,16 @@ const App = {
     const now = Date.now();
     const allCards = Object.values(Review.itemsById)
       .map((card) => {
-        const sched = Review.sm2StateById[card.id];
+        const dueDate = Review.getCardDueDate(card.id);
         return {
           ...card,
-          dueDate: sched ? new Date(sched.due).toLocaleDateString() : 'never',
-          isDue: sched && sched.due <= now,
+          dueDate: dueDate ? dueDate.toLocaleDateString() : 'never',
+          isDue: dueDate && dueDate.getTime() <= now,
         };
       })
       .sort(
         (a, b) =>
-          new Date(Review.sm2StateById[a.id]?.due || 0) -
-          new Date(Review.sm2StateById[b.id]?.due || 0)
+          (Review.getCardDueDate(a.id) || 0) - (Review.getCardDueDate(b.id) || 0)
       );
 
     if (allCards.length === 0)
