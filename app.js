@@ -19,6 +19,12 @@ function gradeCurrentCard(id, quality) {
 }
 
 // ===== MITHRIL COMPONENT =====
+const gradeButton = (quality) => m(
+  'button.button.is-success.is-outlined',
+  { onclick: () => App.handleGrade(quality) },
+  quality
+);
+
 const App = {
   state: { phase: 'idle', mode: null, currentCard: null, fileError: null },
 
@@ -128,13 +134,7 @@ const App = {
               !revealed &&
               m('button.button.is-link', { onclick: App.reveal }, 'Reveal'),
             revealed && [
-              [0, 1, 2, 3, 4, 5].map((q) =>
-                m(
-                  'button.button.is-success.is-outlined',
-                  { onclick: () => App.handleGrade(q) },
-                  q
-                )
-              ),
+              [0, 1, 2, 3, 4, 5].map(gradeButton),
             ],
             !isIdle &&
               m('button.button.is-ghost', { onclick: App.quitSession }, 'Quit'),
