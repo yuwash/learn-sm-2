@@ -19,11 +19,15 @@ function gradeCurrentCard(id, quality) {
 }
 
 // ===== MITHRIL COMPONENT =====
-const gradeButton = (quality) => m(
-  'button.button.is-success.is-outlined',
-  { onclick: () => App.handleGrade(quality) },
-  quality
-);
+const gradeButton = (quality) => {
+  const color =
+    quality < 3 ? 'is-danger' : quality < 4 ? 'is-warning' : 'is-success';
+  return m(
+    `button.button.${color}.is-outlined`,
+    { onclick: () => App.handleGrade(quality) },
+    quality
+  );
+};
 
 const App = {
   state: { phase: 'idle', mode: null, currentCard: null, fileError: null },
