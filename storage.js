@@ -14,8 +14,8 @@ const ITEMS_KEY_NAME = 'itemsById';
 const STATE_KEY_NAME = 'sm2StateById';
 
 export function saveState() {
-  localStorage.setItem(getKey(ITEMS_KEY_NAME), JSON.stringify(Review.itemsById));
-  localStorage.setItem(getKey(STATE_KEY_NAME), JSON.stringify(Review.sm2StateById));
+  localStorage.setItem(getKey(ITEMS_KEY_NAME), JSON.stringify(Review.state.itemsById));
+  localStorage.setItem(getKey(STATE_KEY_NAME), JSON.stringify(Review.state.sm2StateById));
 }
 
 export function loadState() {

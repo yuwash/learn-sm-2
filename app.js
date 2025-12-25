@@ -204,7 +204,7 @@ const App = {
 
   viewCardList() {
     const now = Date.now();
-    const allCards = Object.values(Review.itemsById)
+    const allCards = Object.values(Review.state.itemsById)
       .map((card) => {
         const dueDate = Review.getCardDueDate(card.id);
         return {

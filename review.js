@@ -1,16 +1,18 @@
 import { Scheduler, Card } from '@open-spaced-repetition/sm-2';
 
 // Exporting state so app.js can read/write to it
-export let itemsById = {};
-export let sm2StateById = {};
-let minId = 0;
+export const state = {
+  itemsById: {},
+  sm2StateById: {},
+  minId: 0,
+};
 
 function ensureMinIdGt(val) {
-  if (minId <= val) minId = val + 1;
+  if (state.minId <= val) state.minId = val + 1;
 }
 
 export function setItemsById(val) {
-  itemsById = val;
+  state.itemsById = val;
 }
 
 /**
@@ -22,7 +24,7 @@ export function setSm2StateById(val) {
   for (const id in val) {
     rehydrated[id] = Card.fromJSON(val[id]);
   }
-  sm2StateById = rehydrated;
+  state.sm2StateById = rehydrated;
 }
 
 /**
@@ -32,7 +34,7 @@ export function setSm2StateById(val) {
 export function getDueItems(mode) {
   const now = Date.now();
 
-  return Object.values(sm2StateById)
+  return Object.values(state.sm2StateById)
     .filter((s) => {
       const isLearnMode = s.n === 0;
       const isReviewMode = s.n >= 1;
@@ -42,7 +44,7 @@ export function getDueItems(mode) {
     })
     .map((s) => {
       // Merge the static content (front/back) with the dynamic state (due/reps)
-      const item = itemsById[s.cardId];
+      const item = state.itemsById[s.cardId];
       return {
         ...item,
         scheduling: s, // Keep the library object tucked inside a sub-property
@@ -51,11 +53,11 @@ export function getDueItems(mode) {
 }
 
 export function getCardById(id) {
-  return itemsById[id];
+  return state.itemsById[id];
 }
 
 export function getCardDueDate(id) {
-  const card = sm2StateById[id];
+  const card = state.sm2StateById[id];
   const due = card ? card.due : null;
   return due ? new Date(due) : null;
 }
@@ -66,11 +68,11 @@ export function getCardDueDate(id) {
  * @param {number} quality - Rating (0-5)
  */
 export function sm2Review(id, quality) {
-  const card = sm2StateById[id];
+  const card = state.sm2StateById[id];
   if (!card) return;
   // Scheduler.reviewCard returns { card: Card, reviewLog: ReviewLog }
   const result = Scheduler.reviewCard(card, quality);
-  sm2StateById[id] = result.card;
+  state.sm2StateById[id] = result.card;
   return result.card;
 }
 
@@ -91,16 +93,16 @@ export function extendItemsById(parsedData) {
     return parsedData.map((row) => {
       // Initialize using the library's Card class
       // All new cards are due immediately by default
-      const card = minId ? new Card(minId) : new Card();
+      const card = state.minId ? new Card(state.minId) : new Card();
       const id = card.cardId;
       ensureMinIdGt(id);
-      itemsById[id] = {
+      state.itemsById[id] = {
         id,
         front: row.front,
         back: row.back,
         mode: 'self-grading',
       };
-      sm2StateById[id] = card;
+      state.sm2StateById[id] = card;
       return id;
     });
 }
