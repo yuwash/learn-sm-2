@@ -34,5 +34,5 @@ export function loadState() {
 export function clearState() {
   localStorage.removeItem(getKey(ITEMS_KEY_NAME));
   localStorage.removeItem(getKey(STATE_KEY_NAME));
-  window.location.reload();
+  Review.clear();
 }

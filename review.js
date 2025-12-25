@@ -7,6 +7,12 @@ export const state = {
   minId: 0,
 };
 
+export function clear() {
+  state.itemsById = {};
+  state.sm2StateById = {};
+  state.minId = 0;
+}
+
 function ensureMinIdGt(val) {
   if (state.minId <= val) state.minId = val + 1;
 }
