@@ -1,16 +1,26 @@
 import * as Review from './review.js';
 
-const ITEMS_KEY = 'sr_itemsById';
-const STATE_KEY = 'sr_sm2StateById';
+function getActiveProfile() {
+  const profile = sessionStorage.getItem('learnCards_activeProfile');
+  return profile ? parseInt(profile, 10) : 0;
+}
+
+function getKey(name) {
+    const profile = getActiveProfile();
+    return `learnCards_p${profile}_${name}`;
+}
+
+const ITEMS_KEY_NAME = 'itemsById';
+const STATE_KEY_NAME = 'sm2StateById';
 
 export function saveState() {
-  localStorage.setItem(ITEMS_KEY, JSON.stringify(Review.itemsById));
-  localStorage.setItem(STATE_KEY, JSON.stringify(Review.sm2StateById));
+  localStorage.setItem(getKey(ITEMS_KEY_NAME), JSON.stringify(Review.itemsById));
+  localStorage.setItem(getKey(STATE_KEY_NAME), JSON.stringify(Review.sm2StateById));
 }
 
 export function loadState() {
-  const items = localStorage.getItem(ITEMS_KEY);
-  const sm2 = localStorage.getItem(STATE_KEY);
+  const items = localStorage.getItem(getKey(ITEMS_KEY_NAME));
+  const sm2 = localStorage.getItem(getKey(STATE_KEY_NAME));
 
   if (items && sm2) {
     const parsedItems = JSON.parse(items);
@@ -22,7 +32,7 @@ export function loadState() {
 }
 
 export function clearState() {
-  localStorage.removeItem(ITEMS_KEY);
-  localStorage.removeItem(STATE_KEY);
+  localStorage.removeItem(getKey(ITEMS_KEY_NAME));
+  localStorage.removeItem(getKey(STATE_KEY_NAME));
   window.location.reload();
 }
