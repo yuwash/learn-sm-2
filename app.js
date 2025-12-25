@@ -30,7 +30,7 @@ const gradeButton = (quality) => {
 };
 
 const App = {
-  state: { phase: 'idle', mode: null, currentCard: null, fileError: null },
+  state: { phase: 'idle', mode: null, currentCard: null, fileError: null, csvData: '' },
 
   loadNextCard(mode) {
     return getNextCard(mode);
@@ -81,15 +81,21 @@ const App = {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      try {
-        onCsvImported(ev.target.result);
-        App.state.fileError = 'Import successful!';
-      } catch (err) {
-        App.state.fileError = err.message;
-      }
+      App.state.csvData = ev.target.result;
+      App.handleCsvImport();
       m.redraw();
     };
     reader.readAsText(file);
+  },
+
+  handleCsvImport() {
+    try {
+      onCsvImported(App.state.csvData);
+      App.state.fileError = 'Import successful!';
+      App.state.csvData = '';
+    } catch (err) {
+      App.state.fileError = err.message;
+    }
   },
 
   viewNotification() {
@@ -113,15 +119,36 @@ const App = {
           ),
           m('div.buttons', [
             isIdle && [
-              m('div.file.is-link.mb-0', [
-                m('label.file-label', [
-                  m('input.file-input', {
-                    type: 'file',
-                    accept: '.csv',
-                    onchange: App.handleFileChange,
-                  }),
-                  m('span.file-cta', m('span.file-label', 'Import CSV')),
+              m('div.field.is-grouped.mb-0', [
+                m('div.file.is-link.mb-0', [
+                  m('label.file-label', [
+                    m('input.file-input', {
+                      type: 'file',
+                      accept: '.csv',
+                      onchange: App.handleFileChange,
+                    }),
+                    m('span.file-cta', m('span.file-label', 'Import CSV')),
+                  ]),
                 ]),
+                m('div.control.dropdown.is-hoverable.is-right', [
+                  m('div.dropdown-trigger', [
+                    m('button.button', { 'aria-haspopup': 'true', 'aria-controls': 'dropdown-menu', title: 'More options' }, [
+                      m('span.material-icons', 'more_vert')
+                    ])
+                  ]),
+                  m('div.dropdown-menu', { id: 'dropdown-menu', role: 'menu' }, [
+                    m('div.dropdown-content', [
+                      m('div.dropdown-item', [
+                        m('textarea.textarea', {
+                          placeholder: 'front,back',
+                          value: App.state.csvData,
+                          oninput: (e) => (App.state.csvData = e.target.value),
+                        }),
+                        m('button.button.mt-2', { onclick: App.handleCsvImport }, 'Import from text')
+                      ])
+                    ])
+                  ])
+                ])
               ]),
               m(
                 'button.button.is-link.is-light',
