@@ -43,10 +43,6 @@ export function getDueItems(mode) {
     .map((s) => {
       // Merge the static content (front/back) with the dynamic state (due/reps)
       const item = itemsById[s.cardId];
-      if (!item) {
-        console.log(s);
-        console.log(itemsById);
-      }
       return {
         ...item,
         scheduling: s, // Keep the library object tucked inside a sub-property
@@ -95,7 +91,6 @@ export function parseCsv(text) {
         mode: 'self-grading',
       };
       sm2StateById[id] = card;
-      console.log('Importing ID:', id);
       return id;
     });
 }
