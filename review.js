@@ -76,9 +76,13 @@ export function parseCsv(text) {
     .map((line) => {
       const [front, back] = line.split(',');
       return { front: front?.trim() || '', back: back?.trim() || '' };
+      // Note that no ID is generated here and mode isn’t parsed either.
     })
-    .filter((row) => row.front && row.back)
-    .map((row) => {
+    .filter((row) => row.front && row.back);
+}
+
+export function extendItemsById(parsedData) {
+    return parsedData.map((row) => {
       // Initialize using the library's Card class
       // All new cards are due immediately by default
       const card = minId ? new Card(minId) : new Card();

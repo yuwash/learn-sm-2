@@ -3,7 +3,8 @@ import * as Storage from './storage.js';
 
 // Core logic functions
 function onCsvImported(text) {
-  Review.parseCsv(text);
+  const parsedData = Review.parseCsv(text);
+  Review.extendItemsById(parsedData);
   Storage.saveState();
 }
 
