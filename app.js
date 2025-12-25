@@ -2,7 +2,10 @@ import * as Review from './review.js';
 import * as Storage from './storage.js';
 
 // Core logic functions
-function onCsvImported(text) {
+function onCsvImported(text, replace = false) {
+  if (replace) {
+    Storage.clearState();
+  }
   const parsedData = Review.parseCsv(text);
   Review.extendItemsById(parsedData);
   Storage.saveState();
@@ -30,7 +33,14 @@ const gradeButton = (quality) => {
 };
 
 const App = {
-  state: { phase: 'idle', mode: null, currentCard: null, fileError: null, csvData: '' },
+  state: {
+    phase: 'idle',
+    mode: null,
+    currentCard: null,
+    fileError: null,
+    csvData: '',
+    replacingImport: false,
+  },
 
   loadNextCard(mode) {
     return getNextCard(mode);
@@ -90,12 +100,21 @@ const App = {
 
   handleCsvImport() {
     try {
-      onCsvImported(App.state.csvData);
+      onCsvImported(App.state.csvData, App.state.replacingImport);
       App.state.fileError = 'Import successful!';
       App.state.csvData = '';
     } catch (err) {
       App.state.fileError = err.message;
     }
+  },
+
+  toggleReplacingImport(e) {
+    const isChecked = e.target.checked;
+    App.state.replacingImport = isChecked;
+    if (isChecked) {
+      alert('Warning: Turning on "Clear and replace" will erase all your existing learning progress before importing new cards.');
+    }
+    m.redraw();
   },
 
   viewNotification() {
@@ -144,7 +163,14 @@ const App = {
                           value: App.state.csvData,
                           oninput: (e) => (App.state.csvData = e.target.value),
                         }),
-                        m('button.button.mt-2', { onclick: App.handleCsvImport }, 'Import from text')
+                        m('button.button.my-2', { onclick: App.handleCsvImport }, 'Import from text'),
+                        m('div.field', [
+                          m('input#clearAndReplace[type="checkbox"]', {
+                            checked: App.state.replacingImport,
+                            onchange: App.toggleReplacingImport,
+                          }),
+                          m('label.checkbox', { for: 'clearAndReplace' }, 'Clear and replace'),
+                        ]),
                       ])
                     ])
                   ])
