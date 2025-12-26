@@ -103,6 +103,7 @@ const App = {
       onCsvImported(App.state.csvData, App.state.replacingImport);
       App.state.fileError = 'Import successful!';
       App.state.csvData = '';
+      App.state.phase = 'idle';
     } catch (err) {
       App.state.fileError = err.message;
     }
@@ -312,4 +313,7 @@ const App = {
 };
 
 Storage.loadState();
+if (Object.keys(Review.state.itemsById).length === 0) {
+  App.state.phase = 'edit';
+}
 m.mount(document.getElementById('app'), App);
