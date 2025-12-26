@@ -89,13 +89,20 @@ export function getCardDueDate(id) {
  * @param {Card} card - The Card instance from the library
  * @param {number} quality - Rating (0-5)
  */
-export function sm2Review(id, quality) {
+export function sm2Review(id, quality, extraProgress = 0) {
   const card = state.sm2StateById[id];
   if (!card) return;
   const now = new Date(Date.now());
   state.history.push({ cardId: id, reviewedAt: now } );
   // Scheduler.reviewCard returns { card: Card, reviewLog: ReviewLog }
-  const result = Scheduler.reviewCard(card, quality);
+  let result = Scheduler.reviewCard(card, quality);
+  if (extraProgress > 0) {
+    // To be used when it was extra easy.
+    for (let i = 0; i < extraProgress; i++) {
+      result = Scheduler.reviewCard(result.card, quality, result.card.due);
+      // Need to override reviewDatetime as it will fail when due date not yet reached.
+    }
+  }
   state.sm2StateById[id] = result.card;
   return result.card;
 }

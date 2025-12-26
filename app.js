@@ -1,6 +1,8 @@
 import * as Review from './review.js';
 import * as Storage from './storage.js';
 
+const extraEasyExtraProgress = 3;  // About 100 days
+
 // Core logic functions
 function onCsvImported(text, replace = false) {
   if (replace) {
@@ -11,19 +13,20 @@ function onCsvImported(text, replace = false) {
   Storage.saveState();
 }
 
-function gradeCurrentCard(id, quality) {
-  Review.sm2Review(id, quality);
+function gradeCurrentCard(id, quality, extraProgress) {
+  Review.sm2Review(id, quality, extraProgress);
   Storage.saveState();
 }
 
 // ===== MITHRIL COMPONENT =====
-const gradeButton = (quality) => {
+const gradeButton = (quality, extraProgress, icon, iconTitle) => {
   const color =
     quality < 3 ? 'is-danger' : quality < 4 ? 'is-warning' : 'is-success';
+  const inner = icon ? m('span.material-icons', { title: iconTitle }, icon) : quality;
   return m(
     `button.button.${color}.is-outlined`,
-    { onclick: () => App.handleGrade(quality) },
-    quality
+    { onclick: () => App.handleGrade(quality, extraProgress) },
+    inner
   );
 };
 
@@ -82,9 +85,9 @@ const App = {
     }
   },
 
-  handleGrade(quality) {
+  handleGrade(quality, extraProgress) {
     if (!App.state.currentCard) return;
-    gradeCurrentCard(App.state.currentCard.id, quality);
+    gradeCurrentCard(App.state.currentCard.id, quality, extraProgress);
     const next = App.loadNextCard(App.state.mode);
     if (!next) {
       App.quitSession();
@@ -251,7 +254,10 @@ const App = {
               !revealed &&
               m('button.button.is-link', { onclick: App.reveal }, 'Reveal'),
             revealed && [
-              [0, 1, 2, 3, 4, 5].map(gradeButton),
+              [0, 1, 2, 3, 4, 5].map(
+                quality => gradeButton(quality)  // optional parameters unfilled
+              ),
+              gradeButton(5, extraEasyExtraProgress, 'cake', 'Extra easy'),
             ],
             ]),
             App.viewPhaseSwitch() // Added here
