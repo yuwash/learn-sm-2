@@ -118,6 +118,19 @@ const App = {
     m.redraw();
   },
 
+  statusMessage() {
+    const isIdle = App.state.phase === 'idle';
+    const isEdit = App.state.phase === 'edit';
+    const revealed = App.state.phase === 'self-grading-revealed';
+
+    return (isIdle || isEdit)
+    ? App.state.fileError ||
+        'Import a CSV file (front,back per line) and start learning!'
+    : revealed
+    ? 'Grade how well you remembered (0=fail, 5=perfect).'
+    : 'Study the front. Click Reveal when ready.'
+  },
+
   viewPhaseSwitch() {
     const isIdle = App.state.phase === 'idle';
     const isEdit = App.state.phase === 'edit';
@@ -144,15 +157,7 @@ const App = {
       { class: s.fileError?.includes('successful') ? 'is-success' : 'is-info' },
       [
         m('div.message-body', [
-          m(
-            'p.mb-3',
-            (isIdle || isEdit)
-              ? s.fileError ||
-                  'Import a CSV file (front,back per line) and start learning!'
-              : revealed
-              ? 'Grade how well you remembered (0=fail, 5=perfect).'
-              : 'Study the front. Click Reveal when ready.'
-          ),
+          m('p.mb-3', App.statusMessage()),
           m('div.buttons.is-flex.is-justify-content-space-between', [
           m('div.buttons.mb-0', [ // Wrapper for left-aligned buttons.
             isEdit && [
