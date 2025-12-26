@@ -133,13 +133,12 @@ const App = {
   },
 
   statusMessage() {
-    const isIdle = App.state.phase === 'idle';
     const isEdit = App.state.phase === 'edit';
     const showingHistory = App.state.phase === 'history';
     const revealed = App.state.phase === 'self-grading-revealed';
     const isReviewing = App.isReviewing();
 
-    return (isIdle || isEdit)
+    return isEdit
     ? App.state.fileError ||
         'Import a CSV file (front,back per line) and start learning!'
     : showingHistory
