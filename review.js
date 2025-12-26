@@ -12,6 +12,11 @@ export function clear() {
   state.itemsById = {};
   state.sm2StateById = {};
   state.minId = 0;
+  clearHistory();
+}
+
+export function clearHistory () {
+  state.history = [];
 }
 
 function ensureMinIdGt(val) {

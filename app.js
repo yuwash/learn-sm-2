@@ -32,6 +32,17 @@ const gradeButton = (quality) => {
   );
 };
 
+const clearHistoryButton = () => (
+  m('button.button.is-danger', {
+    onclick: () => {
+      if (confirm('Are you sure you want to clear history? It won’t affect learning progress.')) {
+        Review.clearHistory();
+        Storage.saveState();
+      }
+    },
+  }, 'Clear History')
+);
+
 const App = {
   state: {
     phase: 'idle',
@@ -168,6 +179,7 @@ const App = {
     const s = App.state;
     const isIdle = s.phase === 'idle';
     const isEdit = s.phase === 'edit';
+    const showingHistory = s.phase === 'history';
     const isReviewing = App.isReviewing();
     const revealed = s.phase === 'self-grading-revealed';
 
@@ -239,6 +251,7 @@ const App = {
                 m('span.material-icons', 'history')
               ),
             ],
+            showingHistory && clearHistoryButton(),
             isReviewing &&
               !revealed &&
               m('button.button.is-link', { onclick: App.reveal }, 'Reveal'),
