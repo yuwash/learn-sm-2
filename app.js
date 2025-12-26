@@ -117,6 +117,12 @@ const App = {
     m.redraw();
   },
 
+  viewPhaseSwitch() {
+    return m('button.button.is-rounded', {
+        title: 'Edit cards'
+      }, m('span.material-icons', 'edit'));
+  },
+
   viewNotification() {
     const s = App.state;
     const isIdle = s.phase === 'idle';
@@ -136,7 +142,8 @@ const App = {
               ? 'Grade how well you remembered (0=fail, 5=perfect).'
               : 'Study the front. Click Reveal when ready.'
           ),
-          m('div.buttons', [
+          m('div.buttons.is-flex.is-justify-content-space-between', [
+          m('div.buttons.mb-0', [ // Wrapper for left-aligned buttons.
             isIdle && [
               m('div.field.is-grouped.mb-0', [
                 m('div.file.is-link.mb-0', [
@@ -195,6 +202,8 @@ const App = {
             ],
             !isIdle &&
               m('button.button.is-ghost', { onclick: App.quitSession }, 'Quit'),
+            ]),
+            App.viewPhaseSwitch() // Added here
           ]),
         ]),
       ]
