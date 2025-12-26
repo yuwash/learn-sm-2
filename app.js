@@ -118,14 +118,24 @@ const App = {
   },
 
   viewPhaseSwitch() {
+    const isIdle = App.state.phase === 'idle';
+    const isEdit = App.state.phase === 'edit';
+    const targetPhase = isEdit ? 'idle' : 'edit';
+
     return m('button.button.is-rounded', {
-        title: 'Edit cards'
-      }, m('span.material-icons', 'edit'));
+        title: isEdit ? 'Back to learning' : 'Edit cards',
+        disabled: !isIdle && !isEdit,
+        onclick: () => {
+            App.state.phase = targetPhase;
+        }
+      }, m('span.material-icons', isEdit ? 'arrow_back' : 'edit'));
   },
 
   viewNotification() {
     const s = App.state;
     const isIdle = s.phase === 'idle';
+    const isEdit = s.phase === 'edit';
+    const isReviewing = !isIdle && !isEdit;
     const revealed = s.phase === 'self-grading-revealed';
 
     return m(
@@ -135,7 +145,7 @@ const App = {
         m('div.message-body', [
           m(
             'p.mb-3',
-            isIdle
+            (isIdle || isEdit)
               ? s.fileError ||
                   'Import a CSV file (front,back per line) and start learning!'
               : revealed
@@ -144,7 +154,7 @@ const App = {
           ),
           m('div.buttons.is-flex.is-justify-content-space-between', [
           m('div.buttons.mb-0', [ // Wrapper for left-aligned buttons.
-            isIdle && [
+            isEdit && [
               m('div.field.is-grouped.mb-0', [
                 m('div.file.is-link.mb-0', [
                   m('label.file-label', [
@@ -183,6 +193,8 @@ const App = {
                   ])
                 ])
               ]),
+            ],
+            isIdle && [
               m(
                 'button.button.is-link.is-light',
                 { onclick: () => App.startSession('learn') },
@@ -194,13 +206,13 @@ const App = {
                 'Review due'
               ),
             ],
-            !isIdle &&
+            isReviewing &&
               !revealed &&
               m('button.button.is-link', { onclick: App.reveal }, 'Reveal'),
             revealed && [
               [0, 1, 2, 3, 4, 5].map(gradeButton),
             ],
-            !isIdle &&
+            isReviewing &&
               m('button.button.is-ghost', { onclick: App.quitSession }, 'Quit'),
             ]),
             App.viewPhaseSwitch() // Added here
@@ -292,7 +304,9 @@ const App = {
   view() {
     return m('div', [
       App.viewNotification(),
-      App.state.phase === 'idle' ? App.viewCardList() : App.viewCardArea(),
+      (App.state.phase === 'idle' || App.state.phase === 'edit')
+        ? App.viewCardList()
+        : App.viewCardArea(),
     ]);
   },
 };
