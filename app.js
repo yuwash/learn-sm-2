@@ -277,28 +277,10 @@ const App = {
     ]);
   },
 
-  viewCardList() {
-    const now = Date.now();
-    const allCards = Object.values(Review.state.itemsById)
-      .map((card) => {
-        const dueDate = Review.getCardDueDate(card.id);
-        return {
-          ...card,
-          dueDate: dueDate ? dueDate.toLocaleDateString() : 'never',
-          isDue: dueDate && dueDate.getTime() <= now,
-        };
-      })
-      .sort(
-        (a, b) =>
-          (Review.getCardDueDate(a.id) || 0) - (Review.getCardDueDate(b.id) || 0)
-      );
-
-    if (allCards.length === 0)
-      return m('div.notification', 'No cards imported yet.');
-
+  viewCardList(cards) {
     return m('div', [
-      m('h2.title.is-5.mb-3', `${allCards.length} cards total`),
-      allCards.map((card) =>
+      m('h2.title.is-5.mb-3', `${cards.length} cards total`),
+      cards.map((card) =>
         m(
           'div.box.p-3.mb-2' + (card.isDue ? '.has-background-primary-light' : ''),
           {
@@ -329,12 +311,34 @@ const App = {
     ]);
   },
 
+  viewStateCardList() {
+    const now = Date.now();
+    const allCards = Object.values(Review.state.itemsById)
+      .map((card) => {
+        const dueDate = Review.getCardDueDate(card.id);
+        return {
+          ...card,
+          dueDate: dueDate ? dueDate.toLocaleDateString() : 'never',
+          isDue: dueDate && dueDate.getTime() <= now,
+        };
+      })
+      .sort(
+        (a, b) =>
+          (Review.getCardDueDate(a.id) || 0) - (Review.getCardDueDate(b.id) || 0)
+      );
+
+    if (allCards.length === 0)
+      return m('div.notification', 'No cards imported yet.');
+
+    return App.viewCardList(allCards);
+  },
+
   view() {
     return m('div', [
       App.viewNotification(),
       App.isReviewing()
         ? App.viewCardArea()
-        : App.viewCardList(),
+        : App.viewStateCardList(),
     ]);
   },
 };
