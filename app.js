@@ -11,11 +11,6 @@ function onCsvImported(text, replace = false) {
   Storage.saveState();
 }
 
-function getNextCard(mode) {
-  const dueItems = Review.getDueItems(mode);
-  return dueItems.length > 0 ? dueItems[0] : null;
-}
-
 function gradeCurrentCard(id, quality) {
   Review.sm2Review(id, quality);
   Storage.saveState();
@@ -59,7 +54,7 @@ const App = {
   },
 
   loadNextCard(mode) {
-    return getNextCard(mode);
+    return Review.getNextDueItem(mode);
   },
 
   startSession(mode) {

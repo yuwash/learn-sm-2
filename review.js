@@ -39,29 +39,25 @@ export function setSm2StateById(val) {
   state.sm2StateById = rehydrated;
 }
 
-/**
- * Merges item data with its scheduling state and returns
- * only what is actually due.
- */
-export function getDueItems(mode) {
+export function getNextDueItem(mode) {
   const now = Date.now();
 
-  return Object.values(state.sm2StateById)
+  const dueStates = Object.values(state.sm2StateById)
     .filter((s) => {
       const isLearnMode = s.n === 0;
       const isReviewMode = s.n >= 1;
       const isCorrectMode = mode === 'learn' ? isLearnMode : isReviewMode;
       const isDue = s.due.getTime() <= now;
       return isCorrectMode && isDue;
-    })
-    .map((s) => {
-      // Merge the static content (front/back) with the dynamic state (due/reps)
-      const item = state.itemsById[s.cardId];
-      return {
-        ...item,
-        scheduling: s, // Keep the library object tucked inside a sub-property
-      };
     });
+  if (dueStates.length === 0) return null;
+  // Merge the static content (front/back) with the dynamic state (due/reps)
+  const scheduling = dueStates[0];
+  const item = state.itemsById[scheduling.cardId];
+  return {
+    ...item,
+    scheduling, // Keep the library object tucked inside a sub-property
+  };
 }
 
 export function getCardById(id) {
