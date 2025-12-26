@@ -6,6 +6,7 @@ export const state = {
   sm2StateById: {},
   minId: 0,
   history: [],
+  skipIfReviewedWithinSeconds: 20,
 };
 
 export function clear() {
@@ -47,8 +48,21 @@ export function getNextDueItem(mode) {
       const isLearnMode = s.n === 0;
       const isReviewMode = s.n >= 1;
       const isCorrectMode = mode === 'learn' ? isLearnMode : isReviewMode;
+      if (!isCorrectMode) return false;
       const isDue = s.due.getTime() <= now;
-      return isCorrectMode && isDue;
+      if (!isDue) return false;
+      if (state.skipIfReviewedWithinSeconds) {
+        const lastReview = state.history.reverse().find(
+          (h) => h.cardId === s.cardId
+        );
+        if (lastReview) {
+          const timeSinceLastReview = now - lastReview.reviewedAt.getTime();
+          if (timeSinceLastReview < state.skipIfReviewedWithinSeconds * 1000) {
+            return false;
+          }
+        }
+      }
+      return true;
     });
   if (dueStates.length === 0) return null;
   // Merge the static content (front/back) with the dynamic state (due/reps)
