@@ -319,6 +319,7 @@ const App = {
                   'div.level-item',
                   m(
                     'span.is-family-monospace.is-size-7',
+                    { title: card.date?.toLocaleTimeString() },
                     card.date?.toLocaleDateString()
                   )
                 )
