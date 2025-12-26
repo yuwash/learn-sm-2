@@ -5,6 +5,7 @@ export const state = {
   itemsById: {},
   sm2StateById: {},
   minId: 0,
+  history: [],
 };
 
 export function clear() {
@@ -76,6 +77,7 @@ export function getCardDueDate(id) {
 export function sm2Review(id, quality) {
   const card = state.sm2StateById[id];
   if (!card) return;
+  state.history.push(id);
   // Scheduler.reviewCard returns { card: Card, reviewLog: ReviewLog }
   const result = Scheduler.reviewCard(card, quality);
   state.sm2StateById[id] = result.card;

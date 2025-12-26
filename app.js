@@ -126,12 +126,15 @@ const App = {
   statusMessage() {
     const isIdle = App.state.phase === 'idle';
     const isEdit = App.state.phase === 'edit';
+    const showingHistory = App.state.phase === 'history';
     const revealed = App.state.phase === 'self-grading-revealed';
     const isReviewing = App.isReviewing();
 
     return (isIdle || isEdit)
     ? App.state.fileError ||
         'Import a CSV file (front,back per line) and start learning!'
+    : showingHistory
+    ? 'Showing review history, ordered by most recent.'
     : revealed
     ? 'Grade how well you remembered (0=fail, 5=perfect).'
     : isReviewing ? 'Study the front. Click Reveal when ready.'
@@ -333,11 +336,26 @@ const App = {
     return App.viewCardList(allCards);
   },
 
+  viewHistoryCardList() {
+    if (!Review.state.history || Review.state.history.length === 0) {
+      return m('div.notification', 'No review history yet.');
+    }
+
+    const cards = Review.state.history.map(
+      cardId => Review.state.itemsById[cardId]
+    ).reverse(); // Show newest first
+
+    return App.viewCardList(cards);
+  },
+
   view() {
+    const showingHistory = App.state.phase === 'history';
     return m('div', [
       App.viewNotification(),
       App.isReviewing()
         ? App.viewCardArea()
+        : showingHistory
+        ? App.viewHistoryCardList()
         : App.viewStateCardList(),
     ]);
   },
