@@ -134,15 +134,18 @@ const App = {
   viewPhaseSwitch() {
     const isIdle = App.state.phase === 'idle';
     const isEdit = App.state.phase === 'edit';
-    const targetPhase = isEdit ? 'idle' : 'edit';
+    const isReviewing = !isIdle && !isEdit;
 
     return m('button.button.is-rounded', {
-        title: isEdit ? 'Back to learning' : 'Edit cards',
-        disabled: !isIdle && !isEdit,
+        title: isEdit ? 'Back to learning' : isReviewing ? 'Quit review' : 'Edit cards',
         onclick: () => {
-            App.state.phase = targetPhase;
+            if (isReviewing) {
+                App.quitSession();  // phase -> 'idle'.
+            } else {
+                App.state.phase = isEdit ? 'idle' : 'edit';
+            }
         }
-      }, m('span.material-icons', isEdit ? 'arrow_back' : 'edit'));
+      }, m('span.material-icons', (isEdit || isReviewing) ? 'arrow_back' : 'edit'));
   },
 
   viewNotification() {
@@ -218,8 +221,6 @@ const App = {
             revealed && [
               [0, 1, 2, 3, 4, 5].map(gradeButton),
             ],
-            isReviewing &&
-              m('button.button.is-ghost', { onclick: App.quitSession }, 'Quit'),
             ]),
             App.viewPhaseSwitch() // Added here
           ]),
