@@ -298,10 +298,10 @@ const App = {
       m('h2.title.is-5.mb-3', `${cards.length} cards total`),
       cards.map((card) =>
         m(
-          'div.box.p-3.mb-2' + (card.isDue ? '.has-background-primary-light' : ''),
+          'div.box.p-3.mb-2' + (card.isPrimary ? '.has-background-primary-light' : ''),
           {
             style: `border-left: .3em solid ${
-              card.isDue ? 'darkblue' : 'grey'
+              card.isPrimary ? 'darkblue' : 'grey'
             }`,
           },
           [
@@ -317,7 +317,10 @@ const App = {
                 'div.level-right',
                 m(
                   'div.level-item',
-                  m('span.is-family-monospace.is-size-7', card.dueDate)
+                  m(
+                    'span.is-family-monospace.is-size-7',
+                    card.date?.toLocaleDateString()
+                  )
                 )
               ),
             ]),
@@ -334,8 +337,8 @@ const App = {
         const dueDate = Review.getCardDueDate(card.id);
         return {
           ...card,
-          dueDate: dueDate ? dueDate.toLocaleDateString() : 'never',
-          isDue: dueDate && dueDate.getTime() <= now,
+          date: dueDate,
+          isPrimary: dueDate && dueDate.getTime() <= now,
         };
       })
       .sort(
@@ -355,7 +358,10 @@ const App = {
     }
 
     const cards = Review.state.history.map(
-      cardId => Review.state.itemsById[cardId]
+      ({ cardId, reviewedAt }) => ({
+        ...Review.state.itemsById[cardId],
+        date: reviewedAt,
+      })
     ).reverse(); // Show newest first
 
     return App.viewCardList(cards);

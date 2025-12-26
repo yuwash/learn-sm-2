@@ -82,7 +82,8 @@ export function getCardDueDate(id) {
 export function sm2Review(id, quality) {
   const card = state.sm2StateById[id];
   if (!card) return;
-  state.history.push(id);
+  const now = new Date(Date.now());
+  state.history.push({ cardId: id, reviewedAt: now } );
   // Scheduler.reviewCard returns { card: Card, reviewLog: ReviewLog }
   const result = Scheduler.reviewCard(card, quality);
   state.sm2StateById[id] = result.card;
