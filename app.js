@@ -32,6 +32,36 @@ function exportProfile() {
   URL.revokeObjectURL(url);
 }
 
+function loadProfile() {
+  if (!confirm('This will replace all your current data. Are you sure?')) {
+    return;
+  }
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        Review.setItemsById(data.itemsById);
+        Review.setSm2StateById(data.sm2StateById);
+        Review.state.history = data.history;
+        Storage.saveState();
+        App.state.fileError = 'Profile loaded successfully!';
+        m.redraw();
+      } catch (err) {
+        App.state.fileError = 'Error loading profile: ' + err.message;
+        m.redraw();
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
 // ===== MITHRIL COMPONENT =====
 const gradeButton = (quality, extraProgress, icon, iconTitle) => {
   const color =
@@ -265,6 +295,7 @@ const App = {
             showingHistory && [
               clearHistoryButton(),
               m('button.button.is-link', { onclick: exportProfile }, 'Export Profile'),
+              m('button.button.is-warning', { onclick: loadProfile }, 'Load Profile'),
             ],
             isReviewing &&
               !revealed &&
