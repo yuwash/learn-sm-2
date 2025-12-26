@@ -18,6 +18,20 @@ function gradeCurrentCard(id, quality, extraProgress) {
   Storage.saveState();
 }
 
+function exportProfile() {
+  // The Card objects in sm2StateById have a toJSON method, so JSON.stringify should work.
+  const data = JSON.stringify(Review.state, null, 2); // pretty print JSON
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'learn-cards-profile.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 // ===== MITHRIL COMPONENT =====
 const gradeButton = (quality, extraProgress, icon, iconTitle) => {
   const color =
@@ -248,7 +262,10 @@ const App = {
                 m('span.material-icons', 'history')
               ),
             ],
-            showingHistory && clearHistoryButton(),
+            showingHistory && [
+              clearHistoryButton(),
+              m('button.button.is-link', { onclick: exportProfile }, 'Export Profile'),
+            ],
             isReviewing &&
               !revealed &&
               m('button.button.is-link', { onclick: App.reveal }, 'Reveal'),
