@@ -42,6 +42,11 @@ const App = {
     replacingImport: false,
   },
 
+  isReviewing() {
+    const p = App.state.phase;
+    return p === 'self-grading' || p === 'self-grading-revealed';
+  },
+
   loadNextCard(mode) {
     return getNextCard(mode);
   },
@@ -122,37 +127,45 @@ const App = {
     const isIdle = App.state.phase === 'idle';
     const isEdit = App.state.phase === 'edit';
     const revealed = App.state.phase === 'self-grading-revealed';
+    const isReviewing = App.isReviewing();
 
     return (isIdle || isEdit)
     ? App.state.fileError ||
         'Import a CSV file (front,back per line) and start learning!'
     : revealed
     ? 'Grade how well you remembered (0=fail, 5=perfect).'
-    : 'Study the front. Click Reveal when ready.'
+    : isReviewing ? 'Study the front. Click Reveal when ready.'
+    : ''
   },
 
   viewPhaseSwitch() {
-    const isIdle = App.state.phase === 'idle';
     const isEdit = App.state.phase === 'edit';
-    const isReviewing = !isIdle && !isEdit;
+    const showingHistory = App.state.phase === 'history';
+    const isReviewing = App.isReviewing();
+    const title = (
+      isEdit ? 'Back to learning'
+      : isReviewing ? 'Quit review'
+      : showingHistory ? 'Close history'
+      : 'Edit cards'
+    );
 
     return m('button.button.is-rounded', {
-        title: isEdit ? 'Back to learning' : isReviewing ? 'Quit review' : 'Edit cards',
+        title,
         onclick: () => {
             if (isReviewing) {
                 App.quitSession();  // phase -> 'idle'.
             } else {
-                App.state.phase = isEdit ? 'idle' : 'edit';
+                App.state.phase = (isEdit || showingHistory) ? 'idle' : 'edit';
             }
         }
-      }, m('span.material-icons', (isEdit || isReviewing) ? 'arrow_back' : 'edit'));
+      }, m('span.material-icons', (isEdit || isReviewing || showingHistory) ? 'arrow_back' : 'edit'));
   },
 
   viewNotification() {
     const s = App.state;
     const isIdle = s.phase === 'idle';
     const isEdit = s.phase === 'edit';
-    const isReviewing = !isIdle && !isEdit;
+    const isReviewing = App.isReviewing();
     const revealed = s.phase === 'self-grading-revealed';
 
     return m(
@@ -213,6 +226,14 @@ const App = {
                 'button.button.is-link.is-light',
                 { onclick: () => App.startSession('review') },
                 'Review due'
+              ),
+              m(
+                'button.button.is-light',
+                {
+                  onclick: () => App.state.phase = 'history',
+                  title: 'Show review history'
+                },
+                m('span.material-icons', 'history')
               ),
             ],
             isReviewing &&
@@ -311,9 +332,9 @@ const App = {
   view() {
     return m('div', [
       App.viewNotification(),
-      (App.state.phase === 'idle' || App.state.phase === 'edit')
-        ? App.viewCardList()
-        : App.viewCardArea(),
+      App.isReviewing()
+        ? App.viewCardArea()
+        : App.viewCardList(),
     ]);
   },
 };
