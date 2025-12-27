@@ -69,7 +69,9 @@ export function getNextDueItem(mode) {
     });
   if (dueStates.length === 0) return null;
   // Merge the static content (front/back) with the dynamic state (due/reps)
-  const scheduling = dueStates[0];
+  const scheduling = dueStates.reduce((min, s) => (
+    (s.due.getTime() < min.due.getTime()) ? s : min
+  ));
   const item = state.itemsById[scheduling.cardId];
   return {
     ...item,
