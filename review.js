@@ -61,9 +61,14 @@ export function getNextDueItem(mode) {
 
   const dueStates = Object.values(state.sm2StateById)
     .filter((s) => {
+      // Note that s.n is incremented only for ratings >= 3, thus it
+      // indicates that user has at least once recalled it correctly.
       const isLearnMode = s.n === 0;
       const isReviewMode = s.n >= 1;
-      const isCorrectMode = mode === 'learn' ? isLearnMode : isReviewMode;
+      const isLearnOrRetryMode = isLearnMode || s.needsExtraReview;
+      const isCorrectMode = mode === 'learn' ? isLearnMode
+        : mode === 'learn-or-retry' ? isLearnOrRetryMode
+        : (mode === 'review' || mode === 'review-eager') && isReviewMode;
       if (!isCorrectMode) return false;
       if (!eager) {
         const isDue = s.due.getTime() <= now;
