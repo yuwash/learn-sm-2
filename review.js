@@ -6,6 +6,7 @@ export const state = {
   sm2StateById: {},
   minId: 0,
   history: [],
+  itemIdsByAnswer: {},
   skipIfReviewedWithinSeconds: 20,
 };
 
@@ -14,6 +15,7 @@ export function clear() {
   state.sm2StateById = {};
   state.minId = 0;
   clearHistory();
+  state.itemIdsByAnswer = {};
 }
 
 export function clearHistory () {
@@ -26,6 +28,7 @@ function ensureMinIdGt(val) {
 
 export function setItemsById(val) {
   state.itemsById = val;
+  indexItemIdsByAnswer();
 }
 
 /**
@@ -38,6 +41,18 @@ export function setSm2StateById(val) {
     rehydrated[id] = Card.fromJSON(val[id]);
   }
   state.sm2StateById = rehydrated;
+}
+
+export function indexItemIdsByAnswer() {
+  const result = Object.values(state.itemsById).reduce(
+    (acc, item) => {
+      if (!acc[item.back]) acc[item.back] = [];
+      acc[item.back].push(item.id);
+      return acc;
+    },
+    {}
+  )
+  state.itemIdsByAnswer = result;
 }
 
 export function getNextDueItem(mode) {
@@ -139,7 +154,7 @@ export function parseCsv(text) {
 }
 
 export function extendItemsById(parsedData) {
-    return parsedData.map((row) => {
+    for (const row of parsedData) {
       // Initialize using the library's Card class
       // All new cards are due immediately by default
       const card = state.minId ? new Card(state.minId) : new Card();
@@ -152,6 +167,6 @@ export function extendItemsById(parsedData) {
         mode: 'self-grading',
       };
       state.sm2StateById[id] = card;
-      return id;
-    });
+    };
+    indexItemIdsByAnswer();
 }
