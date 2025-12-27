@@ -1,6 +1,6 @@
 {
   "name": "sm2-app",
-  "private": true,
+  "license": "MPL-2.0",
   "version": "1.1.0",
   "type": "module",
   "scripts": {
