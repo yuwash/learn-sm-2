@@ -115,6 +115,16 @@ export function sm2Review(id, quality, extraProgress = 0, eager = false) {
   return result.card;
 }
 
+export function inputIsCorrect(id, inputMode, input) {
+  const scheduling = state.sm2StateById[id];
+  const item = state.itemsById[id];
+  if (!scheduling || !item) return;
+  if (!input) return false;
+  if (inputMode === 'prefix1') {
+    return item.back.toLowerCase().startsWith(input.toLowerCase());
+  }
+}
+
 export function parseCsv(text) {
   return text
     .split(/\n?\n/)

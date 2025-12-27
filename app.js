@@ -89,6 +89,7 @@ const App = {
   state: {
     phase: 'idle',
     mode: null,
+    inputMode: null,
     currentCard: null,
     fileError: null,
     csvData: '',
@@ -170,6 +171,21 @@ const App = {
       App.setPhase('idle');
     } catch (err) {
       App.state.fileError = err.message;
+    }
+  },
+
+  handleReviewInput(e) {
+    const inputMode = App.state.inputMode;
+    if (!inputMode) return;
+    const userInput = e.target.value;
+    console.log(userInput)
+    if (!userInput) return;
+    if (Review.inputIsCorrect(App.state.currentCard.id, inputMode, userInput)) {
+      App.reveal();
+      return;
+    }
+    if (inputMode === 'prefix1') {
+      e.target.value = ''; // Clear on incorrect prefix
     }
   },
 
@@ -301,6 +317,18 @@ const App = {
                 { onclick: () => App.startSession('review-eager') },
                 'Eager review'
               ),
+              m('div.select', [
+                m('select', {
+                  onchange: (e) => {
+                    const val = e.target.value;
+                    App.state.inputMode = val === 'none' ? null : val;
+                  },
+                  value: App.state.inputMode || 'none'
+                }, [
+                  m('option', { value: 'none' }, 'No input'),
+                  m('option', { value: 'prefix1' }, 'First letter'),
+                ])
+              ]),
               m(
                 'button.button.is-light',
                 {
@@ -335,6 +363,7 @@ const App = {
   viewCardArea() {
     const card = App.state.currentCard;
     const revealed = App.state.phase === 'self-grading-revealed';
+    const inputMode = App.state.inputMode;
 
     return m('div.block', [
       // Front Card
@@ -346,6 +375,18 @@ const App = {
         },
         card ? card.front : 'No card'
       ),
+      // Input field for prefix1
+      !revealed && inputMode === 'prefix1' && m('div.field', [
+        m('div.control', [
+          m('input.input.is-large.has-text-centered', {
+            type: 'text',
+            placeholder: 'Type first letter...',
+            oninput: App.handleReviewInput,
+            oncreate: (vnode) => vnode.dom.focus(),
+            key: card ? card.id : 'no-card', // Reset input for each card
+          })
+        ])
+      ]),
       // Back Card
       revealed &&
         m(
