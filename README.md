@@ -8,5 +8,8 @@ A minimal single-page application demonstrating the [@open-spaced-repetition/sm-
 ## Features
 
 * CSV import for vocabulary, optionally clearing and replacing existing cards.
-* Learning Modes: Choose between "Learn new" to study cards for the first time or "Review due" to practice cards that the algorithm has scheduled for today.
+* Learning Modes: Choose between "Learn new" to study cards for the first time, "Review due" to practice cards that the algorithm has scheduled for today, or "Eager review" to review cards ahead of schedule.
 * View all your imported cards and their next review dates.
+* Export and import your learning profile to a JSON file, allowing you to back up and restore your progress.
+* Track review history and avoid showing the same card within a few seconds.
+* Edit cards directly within the application.
