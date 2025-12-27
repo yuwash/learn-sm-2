@@ -100,6 +100,12 @@ const App = {
     return p === 'self-grading' || p === 'self-grading-revealed';
   },
 
+  setPhase(phase) {
+    App.state.phase = phase;
+    App.state.fileError = null;
+    m.redraw();
+  },
+
   loadNextCard(mode) {
     return Review.getNextDueItem(mode);
   },
@@ -111,21 +117,21 @@ const App = {
       m.redraw();
       return;
     }
-    App.state.phase = 'self-grading';
+    App.setPhase('self-grading');
     App.state.mode = mode;
     App.state.currentCard = card;
     App.state.fileError = null;
   },
 
   quitSession() {
-    App.state.phase = 'idle';
+    App.setPhase('idle');
     App.state.mode = null;
     App.state.currentCard = null;
   },
 
   reveal() {
     if (App.state.phase === 'self-grading') {
-      App.state.phase = 'self-grading-revealed';
+      App.setPhase('self-grading-revealed');
     }
   },
 
@@ -140,8 +146,7 @@ const App = {
       return;
     }
     App.state.currentCard = next;
-    App.state.phase = 'self-grading';
-    m.redraw();
+    App.setPhase('self-grading');
   },
 
   handleFileChange(e) {
@@ -161,7 +166,7 @@ const App = {
       onCsvImported(App.state.csvData, App.state.replacingImport);
       App.state.fileError = 'Import successful!';
       App.state.csvData = '';
-      App.state.phase = 'idle';
+      App.setPhase('idle');
     } catch (err) {
       App.state.fileError = err.message;
     }
@@ -210,7 +215,7 @@ const App = {
             if (isReviewing) {
                 App.quitSession();  // phase -> 'idle'.
             } else {
-                App.state.phase = (isEdit || showingHistory) ? 'idle' : 'edit';
+                App.setPhase((isEdit || showingHistory) ? 'idle' : 'edit');
             }
         }
       }, m('span.material-icons', (isEdit || isReviewing || showingHistory) ? 'arrow_back' : 'edit'));
@@ -286,7 +291,7 @@ const App = {
               m(
                 'button.button.is-light',
                 {
-                  onclick: () => App.state.phase = 'history',
+                  onclick: () => App.setPhase('history'),
                   title: 'Show review history'
                 },
                 m('span.material-icons', 'history')
@@ -431,6 +436,6 @@ const App = {
 
 Storage.loadState();
 if (Object.keys(Review.state.itemsById).length === 0) {
-  App.state.phase = 'edit';
+  App.setPhase('edit');
 }
 m.mount(document.getElementById('app'), App);
