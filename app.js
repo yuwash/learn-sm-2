@@ -182,20 +182,27 @@ const App = {
   },
 
   statusMessage() {
+    const messages = [];
     const isEdit = App.state.phase === 'edit';
     const showingHistory = App.state.phase === 'history';
     const revealed = App.state.phase === 'self-grading-revealed';
     const isReviewing = App.isReviewing();
 
-    return isEdit
-    ? App.state.fileError ||
-        'Import a CSV file (front,back per line) and start learning!'
+    if (App.state.fileError) {
+      messages.push(App.state.fileError);
+    }
+    const help = isEdit
+    ? 'Import a CSV file (front,back per line) and start learning!'
     : showingHistory
     ? 'Showing review history, ordered by most recent.'
     : revealed
     ? 'Grade how well you remembered (0=fail, 5=perfect).'
     : isReviewing ? 'Study the front. Click Reveal when ready.'
-    : ''
+    : '';
+    if (help) {
+      messages.push(help);
+    }
+    return messages.join(' ');
   },
 
   viewPhaseSwitch() {
