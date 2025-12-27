@@ -42,6 +42,7 @@ export function setSm2StateById(val) {
 
 export function getNextDueItem(mode) {
   const now = Date.now();
+  const eager = mode === 'review-eager';
 
   const dueStates = Object.values(state.sm2StateById)
     .filter((s) => {
@@ -49,8 +50,10 @@ export function getNextDueItem(mode) {
       const isReviewMode = s.n >= 1;
       const isCorrectMode = mode === 'learn' ? isLearnMode : isReviewMode;
       if (!isCorrectMode) return false;
-      const isDue = s.due.getTime() <= now;
-      if (!isDue) return false;
+      if (!eager) {
+        const isDue = s.due.getTime() <= now;
+        if (!isDue) return false;
+      }
       if (state.skipIfReviewedWithinSeconds) {
         const lastReview = state.history.reverse().find(
           (h) => h.cardId === s.cardId
@@ -89,13 +92,16 @@ export function getCardDueDate(id) {
  * @param {Card} card - The Card instance from the library
  * @param {number} quality - Rating (0-5)
  */
-export function sm2Review(id, quality, extraProgress = 0) {
+export function sm2Review(id, quality, extraProgress = 0, eager = false) {
   const card = state.sm2StateById[id];
   if (!card) return;
   const now = new Date(Date.now());
   state.history.push({ cardId: id, reviewedAt: now } );
+  const reviewDatetime = (
+    eager && card.due && now.getTime() < card.due.getTime()
+  ) ? card.due: null;
   // Scheduler.reviewCard returns { card: Card, reviewLog: ReviewLog }
-  let result = Scheduler.reviewCard(card, quality);
+  let result = Scheduler.reviewCard(card, quality, reviewDatetime);
   if (extraProgress > 0) {
     // To be used when it was extra easy.
     for (let i = 0; i < extraProgress; i++) {

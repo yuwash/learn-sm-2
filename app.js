@@ -13,8 +13,8 @@ function onCsvImported(text, replace = false) {
   Storage.saveState();
 }
 
-function gradeCurrentCard(id, quality, extraProgress) {
-  Review.sm2Review(id, quality, extraProgress);
+function gradeCurrentCard(id, quality, extraProgress, eager) {
+  Review.sm2Review(id, quality, extraProgress, eager);
   Storage.saveState();
 }
 
@@ -137,7 +137,8 @@ const App = {
 
   handleGrade(quality, extraProgress) {
     if (!App.state.currentCard) return;
-    gradeCurrentCard(App.state.currentCard.id, quality, extraProgress);
+    const eager = App.state.mode === 'review-eager';
+    gradeCurrentCard(App.state.currentCard.id, quality, extraProgress, eager);
     const next = App.loadNextCard(App.state.mode);
     if (!next) {
       App.quitSession();
@@ -294,6 +295,11 @@ const App = {
                 'button.button.is-link.is-light',
                 { onclick: () => App.startSession('review') },
                 'Review due'
+              ),
+              m(
+                'button.button.is-link.is-light',
+                { onclick: () => App.startSession('review-eager') },
+                'Eager review'
               ),
               m(
                 'button.button.is-light',
