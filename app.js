@@ -417,7 +417,10 @@ const App = {
                 'div.level-left',
                 m(
                   'div.level-item',
-                  m('span.has-text-weight-medium', card.front)
+                  [
+                    m('span.has-text-weight-medium', card.front),
+                    card.inputMode && m('span.tag.is-info.is-light.ml-2', card.inputMode)
+                  ]
                 )
               ),
               m(
