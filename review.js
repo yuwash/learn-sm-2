@@ -70,8 +70,10 @@ export function getNextDueItem(mode) {
         if (!isDue) return false;
       }
       if (state.skipIfReviewedWithinSeconds) {
+        const item = state.itemsById[s.cardId];
+        const cardIdsWithSameAnswer = state.itemIdsByAnswer[item.back];
         const lastReview = state.history.reverse().find(
-          (h) => h.cardId === s.cardId
+          (h) => cardIdsWithSameAnswer.includes(h.cardId)
         );
         if (lastReview) {
           const timeSinceLastReview = now - lastReview.reviewedAt.getTime();
