@@ -108,7 +108,7 @@ const App = {
   },
 
   loadNextCard(mode) {
-    return Review.getNextDueItem(mode);
+    return Review.getNextDueItem(mode, App.state.inputMode);
   },
 
   startSession(mode) {

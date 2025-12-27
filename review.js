@@ -4,6 +4,10 @@ import { Scheduler, Card } from '@open-spaced-repetition/sm-2';
 export const state = {
   itemsById: {},
   sm2StateById: {},
+  // To manage virtual cards for different input modes
+  // Maps a parent card ID to its virtual children.
+  // E.g., { parentId1: { 'prefix1': childId1, ... }, ... }
+  childCardsByParentId: {},
   minId: 0,
   history: [],
   itemIdsByAnswer: {},
@@ -13,6 +17,7 @@ export const state = {
 export function clear() {
   state.itemsById = {};
   state.sm2StateById = {};
+  state.childCardsByParentId = {};
   state.minId = 0;
   clearHistory();
   state.itemIdsByAnswer = {};
@@ -55,12 +60,17 @@ export function indexItemIdsByAnswer() {
   state.itemIdsByAnswer = result;
 }
 
-export function getNextDueItem(mode) {
+export function getNextDueItem(mode, inputMode, noChildWithInputMode) {
   const now = Date.now();
   const eager = mode === 'review-eager';
 
   const dueStates = Object.values(state.sm2StateById)
     .filter((s) => {
+      const item = state.itemsById[s.cardId];
+      // Filter by inputMode if provided, otherwise filter for main cards (no inputMode)
+      const isCorrectInputMode = item.inputMode === inputMode || !(inputMode || item.inputMode);
+      if (!isCorrectInputMode) return false;
+
       // Note that s.n is incremented only for ratings >= 3, thus it
       // indicates that user has at least once recalled it correctly.
       const isLearnMode = s.n === 0;
@@ -74,22 +84,40 @@ export function getNextDueItem(mode) {
         const isDue = s.due.getTime() <= now;
         if (!isDue) return false;
       }
+      if (noChildWithInputMode) {
+        const children = state.childCardsByParentId[item.id];
+        const childExists = children ? Object.keys(children).includes(noChildWithInputMode) : false;
+        if (childExists) return false;
+      }
       if (state.skipIfReviewedWithinSeconds) {
-        const item = state.itemsById[s.cardId];
         const cardIdsWithSameAnswer = state.itemIdsByAnswer[item.back];
-        const lastReview = state.history.reverse().find(
-          (h) => cardIdsWithSameAnswer.includes(h.cardId)
-        );
-        if (lastReview) {
-          const timeSinceLastReview = now - lastReview.reviewedAt.getTime();
-          if (timeSinceLastReview < state.skipIfReviewedWithinSeconds * 1000) {
-            return false;
+        if (cardIdsWithSameAnswer) {
+          const lastReview = state.history.slice().reverse().find(
+            (h) => cardIdsWithSameAnswer.includes(h.cardId)
+          );
+          if (lastReview) {
+            const timeSinceLastReview = now - lastReview.reviewedAt.getTime();
+            if (timeSinceLastReview < state.skipIfReviewedWithinSeconds * 1000) {
+              return false;
+            }
           }
         }
       }
       return true;
     });
-  if (dueStates.length === 0) return null;
+
+  if (dueStates.length === 0) {
+    // If no due cards for the requested inputMode, recursively look for a main card.
+    if (inputMode) {
+      const parentItem = getNextDueItem('learn-or-retry', undefined, inputMode);
+      // If child with that inputMode already exists, then we’ve already seen above that it isn’t due.
+      if (parentItem) {
+        return getOrCreateChildCard(parentItem, inputMode);
+      }
+    }
+    return null;
+  }
+
   // Merge the static content (front/back) with the dynamic state (due/reps)
   const scheduling = dueStates.reduce((min, s) => (
     (s.due.getTime() < min.due.getTime()) ? s : min
@@ -98,6 +126,43 @@ export function getNextDueItem(mode) {
   return {
     ...item,
     scheduling, // Keep the library object tucked inside a sub-property
+  };
+}
+
+export function getOrCreateChildCard(parentItem, inputMode) {
+  if (!state.childCardsByParentId[parentItem.id]) {
+    state.childCardsByParentId[parentItem.id] = {};
+  }
+  const existingChildId = state.childCardsByParentId[parentItem.id][inputMode];
+  if (existingChildId) {
+    return {
+      ...state.itemsById[existingChildId],
+      scheduling: state.sm2StateById[existingChildId]
+    };
+  }
+
+  // Create a new virtual child card
+  const card = state.minId ? new Card(state.minId) : new Card();
+  const id = card.cardId;
+  ensureMinIdGt(id);
+
+  const childItem = {
+    ...parentItem,
+    id,
+    parentId: parentItem.id,
+    inputMode,
+  };
+  delete childItem.scheduling;
+
+  state.itemsById[id] = childItem;
+  state.sm2StateById[id] = card;
+  state.childCardsByParentId[parentItem.id][inputMode] = id;
+  if (!state.itemIdsByAnswer[childItem.back]) state.itemIdsByAnswer[childItem.back] = [];
+  state.itemIdsByAnswer[childItem.back].push(id);
+
+  return {
+    ...childItem,
+    scheduling: card,
   };
 }
 
