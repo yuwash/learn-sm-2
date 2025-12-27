@@ -199,6 +199,19 @@ export function sm2Review(id, quality, extraProgress = 0, eager = false) {
     }
   }
   state.sm2StateById[id] = result.card;
+
+  if (quality >= 3) {
+    const children = state.childCardsByParentId[id];
+    if (children) {
+      for (const childId of Object.values(children)) {
+        delete state.itemsById[childId];
+        delete state.sm2StateById[childId];
+      }
+      delete state.childCardsByParentId[id];
+      indexItemIdsByAnswer();
+    }
+  }
+
   return result.card;
 }
 
