@@ -178,14 +178,10 @@ const App = {
     const inputMode = App.state.inputMode;
     if (!inputMode) return;
     const userInput = e.target.value;
-    console.log(userInput)
     if (!userInput) return;
     if (Review.inputIsCorrect(App.state.currentCard.id, inputMode, userInput)) {
       App.reveal();
       return;
-    }
-    if (inputMode === 'prefix1') {
-      e.target.value = ''; // Clear on incorrect prefix
     }
   },
 
@@ -384,6 +380,7 @@ const App = {
             oninput: App.handleReviewInput,
             oncreate: (vnode) => vnode.dom.focus(),
             key: card ? card.id : 'no-card', // Reset input for each card
+            maxlength: 1,
           })
         ])
       ]),
