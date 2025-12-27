@@ -34,6 +34,7 @@ function ensureMinIdGt(val) {
 export function setItemsById(val) {
   state.itemsById = val;
   indexItemIdsByAnswer();
+  indexChildCardsByParentId();
 }
 
 /**
@@ -58,6 +59,20 @@ export function indexItemIdsByAnswer() {
     {}
   )
   state.itemIdsByAnswer = result;
+}
+
+export function indexChildCardsByParentId() {
+  const result = Object.values(state.itemsById).reduce(
+    (acc, item) => {
+      if (item.parentId) {
+        if (!acc[item.parentId]) acc[item.parentId] = {};
+        acc[item.parentId][item.inputMode] = item.id;
+      }
+      return acc;
+    },
+    {}
+  )
+  state.childCardsByParentId = result;
 }
 
 export function getNextDueItem(mode, inputMode, noChildWithInputMode) {
@@ -254,4 +269,5 @@ export function extendItemsById(parsedData) {
       state.sm2StateById[id] = card;
     };
     indexItemIdsByAnswer();
+    indexChildCardsByParentId();
 }
