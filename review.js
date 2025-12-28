@@ -116,7 +116,7 @@ export function getNextDueItem(mode, inputMode, noChildWithInputMode) {
       // Note that s.n is incremented only for ratings >= 3, thus it
       // indicates that user has at least once recalled it correctly.
       const isLearnMode = s.n === 0;
-      const isReviewMode = s.n >= 1 || !idsWithInitialDue.includes(s.cardId);
+      const isReviewMode = s.n >= 1 || !idsWithInitialDue.includes(Number(s.cardId));
       const isLearnOrRetryMode = isLearnMode || s.needsExtraReview;
       const isCorrectMode = mode === 'learn' ? isLearnMode
         : mode === 'learn-or-retry' ? isLearnOrRetryMode
