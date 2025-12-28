@@ -49,6 +49,32 @@ export function setSm2StateById(val) {
   state.sm2StateById = rehydrated;
 }
 
+export function getIdsWithInitialDue() {
+  // Wordaround to find out whether a card was reviewed at least once, see
+  // https://github.com/open-spaced-repetition/sm-2-ts/issues/3
+  // Convert the object of states into an array of [id, dueTime] pairs
+  const entries = Object.entries(state.sm2StateById).map(
+    ([id, { due }]) => [id, due.getTime()]
+  );
+
+  // Find the smallest due time (or Infinity if there are none)
+  const minDue = entries.reduce(
+    (min, [, dueTime]) => Math.min(min, dueTime),
+    Infinity
+  );
+
+  // If no due times were found, return an empty array
+  if (minDue === Infinity) return [];
+
+  const oneSecondLater = minDue + 1000;
+
+  // Keep only the ids whose due time falls within the 1‑second window
+  return entries
+    .filter(([, dueTime]) => dueTime < oneSecondLater)
+    .map(([id]) => Number(id));
+  // ids restored from localStorage seem to be strings, so convert to numbers.
+}
+
 export function indexItemIdsByAnswer() {
   const result = Object.values(state.itemsById).reduce(
     (acc, item) => {
@@ -78,6 +104,7 @@ export function indexChildCardsByParentId() {
 export function getNextDueItem(mode, inputMode, noChildWithInputMode) {
   const now = Date.now();
   const eager = mode === 'review-eager';
+  const idsWithInitialDue = getIdsWithInitialDue();
 
   const dueStates = Object.values(state.sm2StateById)
     .filter((s) => {
@@ -89,7 +116,7 @@ export function getNextDueItem(mode, inputMode, noChildWithInputMode) {
       // Note that s.n is incremented only for ratings >= 3, thus it
       // indicates that user has at least once recalled it correctly.
       const isLearnMode = s.n === 0;
-      const isReviewMode = s.n >= 1;
+      const isReviewMode = s.n >= 1 || !idsWithInitialDue.includes(s.cardId);
       const isLearnOrRetryMode = isLearnMode || s.needsExtraReview;
       const isCorrectMode = mode === 'learn' ? isLearnMode
         : mode === 'learn-or-retry' ? isLearnOrRetryMode
