@@ -114,7 +114,16 @@ const App = {
   startSession(mode) {
     const card = App.loadNextCard(mode);
     if (!card) {
-      App.state.fileError = `No cards available for ${mode}.`;
+      let error = `No cards available for ${mode}.`;
+      if (mode === 'review') {
+        const eagerCard = Review.getNextDueItem('review-eager', App.state.inputMode);
+        if (eagerCard) {
+          const dueTime = eagerCard.scheduling.due;
+          const options = { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+          error += ` Next review due on: ${dueTime.toLocaleDateString(undefined, options)}.`;
+        }
+      }
+      App.state.fileError = error;
       m.redraw();
       return;
     }
